@@ -28,8 +28,14 @@ public class UserRestController {
     * 회원가입 API
     * */
     @PostMapping("/signup")
-    public ApiResponse<SuccessStatus> signUpUser(@RequestBody UserRequestDTO.RegisterUserRequestDTO registerUserRequestDTO){
-        userService.registerUser(registerUserRequestDTO);
+    public ApiResponse<SuccessStatus> signUpUser(@RequestBody UserRequestDTO userRequestDTO){
+        userService.registerUser(userRequestDTO);
         return ApiResponse.onSuccess(SuccessStatus._OK);
     }
+
+//    @PostMapping("/login")
+//    public ApiResponse<SuccessStatus> loginUser(@RequestBody UserRequestDTO.LoginUserRequestDTO loginUserRequestDTO){
+//        userService.loginUser(userLoginRequestDTO);
+//        return ApiResponse.onSuccess(SuccessStatus._OK);
+//    }
 }
