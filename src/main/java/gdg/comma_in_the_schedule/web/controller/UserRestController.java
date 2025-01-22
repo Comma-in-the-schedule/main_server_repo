@@ -4,6 +4,7 @@ import gdg.comma_in_the_schedule.apiPayload.ApiResponse;
 import gdg.comma_in_the_schedule.apiPayload.code.status.SuccessStatus;
 import gdg.comma_in_the_schedule.service.UserService;
 import gdg.comma_in_the_schedule.web.dto.userdto.UserRequestDTO;
+import gdg.comma_in_the_schedule.web.dto.userdto.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +34,9 @@ public class UserRestController {
         return ApiResponse.onSuccess(SuccessStatus._OK);
     }
 
-//    @PostMapping("/login")
-//    public ApiResponse<SuccessStatus> loginUser(@RequestBody UserRequestDTO.LoginUserRequestDTO loginUserRequestDTO){
-//        userService.loginUser(userLoginRequestDTO);
-//        return ApiResponse.onSuccess(SuccessStatus._OK);
-//    }
+    @PostMapping("/login")
+    public ApiResponse<UserResponseDTO.UserLoginResponseDTO> loginUser(@RequestBody UserRequestDTO userRequestDTO){
+        UserResponseDTO.UserLoginResponseDTO userLoginResponseDTO = userService.loginUser(userRequestDTO);
+        return ApiResponse.onSuccess(userLoginResponseDTO);
+    }
 }
