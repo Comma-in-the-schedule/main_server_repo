@@ -15,6 +15,8 @@ public enum ErrorStatus implements BaseErrorCode {
     _FORBIDDEN(HttpStatus.FORBIDDEN, "COMMON403", "금지된 요청입니다."),
 
     _USER_EXISTS(HttpStatus.BAD_REQUEST, "USER100", "이미 가입된 유저입니다."),
+    _USER_NOT_EXISTS(HttpStatus.BAD_REQUEST, "USER101", "해당 유저가 존재하지 않습니다."),
+    _PASSSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "USER102", "비밀번호가 일치하지 않습니다"),
     ;
 
     private final HttpStatus httpStatus;
