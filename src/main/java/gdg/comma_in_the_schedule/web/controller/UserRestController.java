@@ -7,11 +7,11 @@ import gdg.comma_in_the_schedule.web.dto.userdto.UserRequestDTO;
 import gdg.comma_in_the_schedule.web.dto.userdto.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,5 +38,12 @@ public class UserRestController {
     public ApiResponse<UserResponseDTO.UserLoginResponseDTO> loginUser(@RequestBody UserRequestDTO userRequestDTO){
         UserResponseDTO.UserLoginResponseDTO userLoginResponseDTO = userService.loginUser(userRequestDTO);
         return ApiResponse.onSuccess(userLoginResponseDTO);
+    }
+
+    @GetMapping("/user")
+    public Map<String, Object> getUser(@AuthenticationPrincipal OAuth2User principal) {
+        // 현재 로그인한 사용자 정보 반환
+        System.out.println(principal.getAttributes());
+        return principal.getAttributes();
     }
 }
