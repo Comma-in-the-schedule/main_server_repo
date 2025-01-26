@@ -19,4 +19,9 @@ public class User extends BaseEntity {
 
     @Column(nullable = false, length = 60)
     private String password;
+
+
+    //OAuth2 테스트 용
+    private String name;
+    private String picture;
 }
