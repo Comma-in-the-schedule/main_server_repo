@@ -1,8 +1,9 @@
 package gdg.comma_in_the_schedule.service;
 
 import gdg.comma_in_the_schedule.apiPayload.code.status.ErrorStatus;
-import gdg.comma_in_the_schedule.apiPayload.exception.GeneralException;
 import gdg.comma_in_the_schedule.apiPayload.exception.handler.EmailAlreadyExistsHandler;
+import gdg.comma_in_the_schedule.apiPayload.exception.handler.EmailNotExistsHandler;
+import gdg.comma_in_the_schedule.apiPayload.exception.handler.PasswordNotMatchHandler;
 import gdg.comma_in_the_schedule.config.jwt.JWToken;
 import gdg.comma_in_the_schedule.config.jwt.JwtGenerator;
 import gdg.comma_in_the_schedule.domain.entity.User;
@@ -35,10 +36,10 @@ public class UserService {
     }
 
     public UserResponseDTO.UserLoginResponseDTO loginUser(UserRequestDTO userRequestDTO){
-        User user = userRepository.findByEmail(userRequestDTO.getEmail()).orElseThrow(() -> new GeneralException(ErrorStatus._USER_NOT_EXISTS));
+        User user = userRepository.findByEmail(userRequestDTO.getEmail()).orElseThrow(() -> new EmailNotExistsHandler(ErrorStatus._USER_NOT_EXISTS));
 
         if (!passwordEncoder.matches(userRequestDTO.getPassword(), user.getPassword())) {
-            throw new GeneralException(ErrorStatus._PASSSWORD_NOT_MATCH);
+            throw new PasswordNotMatchHandler(ErrorStatus._PASSSWORD_NOT_MATCH);
         }
 
         //로그인 성공시 jwt 반환
