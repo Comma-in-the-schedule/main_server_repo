@@ -7,11 +7,7 @@ import gdg.comma_in_the_schedule.web.dto.userdto.UserRequestDTO;
 import gdg.comma_in_the_schedule.web.dto.userdto.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,11 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class UserRestController {
     private final UserService userService;
-
-//    UserRestController(UserService userService) {
-//        this.userService = userService;
-//    }
-
 
     /*
     * 회원가입 API
@@ -34,6 +25,9 @@ public class UserRestController {
         return ApiResponse.onSuccess(SuccessStatus._OK);
     }
 
+    /*
+    * 로그인 API
+    * */
     @PostMapping("/login")
     public ApiResponse<?> loginUser(@RequestBody UserRequestDTO userRequestDTO){
         UserResponseDTO.UserLoginResponseDTO userLoginResponseDTO = userService.loginUser(userRequestDTO);
