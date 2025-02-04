@@ -22,7 +22,7 @@ jobs:
 
     # 3. Spring Boot 빌드
     - name: Build Spring Boot application
-      run: ./gradlew clean build # 또는 `mvn clean package`
+      run: ./gradlew clean build
 
     # 4. Oracle VM으로 파일 복사
     - name: Copy files to Oracle Cloud
@@ -31,8 +31,8 @@ jobs:
         host: ${{ secrets.VM_HOST }}
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-        source: "build/libs/*.jar" # 빌드된 JAR 파일 경로
-        target: "~/app/"           # VM 내 저장 위치
+        source: "build/libs/*.jar"
+        target: "~/app/"
 
     # 5. Oracle VM에서 Spring Boot 실행
     - name: Deploy Spring Boot application
