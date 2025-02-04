@@ -9,7 +9,12 @@ COPY . .
 
 RUN chmod +x gradlew
 
-RUN ./gradlew clean build --no-daemon
+RUN java -version
+
+RUN ls -l /app
+
+RUN sh ./gradlew clean build --no-daemon --stacktrace
+RUN #./gradlew clean build --no-daemon
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
