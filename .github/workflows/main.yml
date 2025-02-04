@@ -1,0 +1,46 @@
+name: Deploy Spring Boot to Oracle Cloud
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. 리포지토리 클론
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # 2. JDK 설치
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17' 
+
+    # 3. Spring Boot 빌드
+    - name: Build Spring Boot application
+      run: ./gradlew clean build # 또는 `mvn clean package`
+
+    # 4. Oracle VM으로 파일 복사
+    - name: Copy files to Oracle Cloud
+      uses: appleboy/scp-action@v0.1.6
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+        source: "build/libs/*.jar" # 빌드된 JAR 파일 경로
+        target: "~/app/"           # VM 내 저장 위치
+
+    # 5. Oracle VM에서 Spring Boot 실행
+    - name: Deploy Spring Boot application
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+        script: |
+          pkill -f 'java -jar' || true
+          nohup java -jar ~/app/*.jar > app.log 2>&1 &
