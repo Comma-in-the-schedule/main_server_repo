@@ -24,9 +24,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. Spring Boot 빌드
-      - name: Build Spring Boot application
-        run: ./gradlew clean build
+#      # 3. Spring Boot 빌드
+#      - name: Build Spring Boot application
+#        run: ./gradlew clean build
 
       # 4. Docker 이미지 빌드
       - name: Build Docker Image
