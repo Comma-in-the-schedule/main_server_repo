@@ -81,7 +81,8 @@ jobs:
 
             # 환경변수 로드
             echo "환경변수 로드 완료"
+            cat .env
             export $(grep -v '^#' .env | xargs)
             
             # Docker Compose 실행
-            docker-compose up -d --build
+            docker-compose --env-file .env up -d --build
