@@ -3,7 +3,10 @@ name: Deploy Spring Boot to Oracle Cloud
 on:
   push:
     branches:
-      - main
+      - feature
+  pull_request:
+    branches:
+      - feature
 
 jobs:
   deploy:
