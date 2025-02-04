@@ -2,6 +2,9 @@
 FROM eclipse-temurin:17-jdk-alpine AS builder
 WORKDIR /app
 
+# 필수 패키지 설치 (bash, coreutils 등)
+RUN apk add --no-cache bash coreutils
+
 COPY . .
 
 RUN chmod +x gradlew
