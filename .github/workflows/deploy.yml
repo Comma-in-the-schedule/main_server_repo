@@ -113,8 +113,8 @@ jobs:
 
             # Docker Compose 실행 (명확한 .env 파일 지정)
             echo "🚀 Docker Compose 실행 중..."
-            docker-compose --env-file .env up -d --build
+            sudo docker-compose --env-file .env up -d --build
 
             # 실행된 컨테이너 상태 확인
             echo "📜 실행된 컨테이너 로그:"
-            docker ps -a
+            sudo docker ps -a
