@@ -54,7 +54,7 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          source: "docker-compose.yml, Dockerfile"
+          source: "docker-compose.yml, Dockerfile, gredlew, gradle/*"
           target: "~/app/"
 
       - name: Save & Transfer Docker Image to Oracle Cloud
