@@ -84,11 +84,16 @@ jobs:
 
             # 기존 컨테이너 중지 및 제거
             echo "🛑 기존 컨테이너 중지 중..."
-            docker-compose down || true
+            sudo docker-compose down || true
+            sudo docker stop $(sudo docker ps -aq) || true
+            sudo docker rm -f $(sudo docker ps -aq) || true
+            sudo docker network prune -f || true
+
 
             # 기존 Docker 이미지 삭제 (충돌 방지)
             echo "🗑 기존 Docker 이미지 삭제 중..."
-            docker rmi -f spring-boot-app || true
+            sudo docker rmi -f $(sudo docker images -q) || true
+            sudo docker system prune -a -f || true
 
             # 새 Docker 이미지 로드
             echo "🚀 새로운 Docker 이미지 로드 중..."
