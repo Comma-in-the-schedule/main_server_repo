@@ -28,9 +28,23 @@ jobs:
 #      - name: Build Spring Boot application
 #        run: ./gradlew clean build
 
-      # 4. Docker 이미지 빌드
+#      # 4. Docker 이미지 빌드
+#      - name: Build Docker Image
+#        run: docker build -t spring-boot-app:${{ github.sha }} .
+      # 4. Docker 이미지 빌드 (환경변수를 Dockerfile에 전달)
       - name: Build Docker Image
-        run: docker build -t spring-boot-app:${{ github.sha }} .
+        run: |
+          docker build \
+            --build-arg MYSQL_HOST=${{ secrets.MYSQL_HOST }} \
+            --build-arg MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
+            --build-arg MYSQL_USER=${{ secrets.MYSQL_USER }} \
+            --build-arg MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
+            --build-arg MAIL_HOST=${{ secrets.MAIL_HOST }} \
+            --build-arg MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \
+            --build-arg MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
+            --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            -t spring-boot-app:${{ github.sha }} .
+      
 
       # 5. Docker Compose 파일 & 이미지 Oracle Cloud로 전송
       - name: Copy files to Oracle Cloud
@@ -81,7 +95,8 @@ jobs:
 
             # 환경변수 로드
             echo "환경변수 로드 완료"
+            cat .env
             export $(grep -v '^#' .env | xargs)
             
             # Docker Compose 실행
-            docker-compose up -d --build
+            docker-compose --env-file .env up -d --build
