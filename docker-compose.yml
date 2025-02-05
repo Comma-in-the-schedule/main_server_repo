@@ -6,6 +6,7 @@ services:
     container_name: mysql-db
     restart: always
     environment:
+
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
@@ -24,6 +25,8 @@ services:
     image: spring-boot-app:latest  # Spring Boot Docker 이미지
     container_name: spring-boot-app
     restart: always
+    environment:
+      MYSQL_HOST: db
     build:
       context: .
       dockerfile: Dockerfile
