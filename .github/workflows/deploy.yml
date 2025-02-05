@@ -2,11 +2,9 @@ name: Deploy Spring Boot with Docker Compose
 
 on:
   push:
-    branches:
-      - feature
+    branches: [feature]
   pull_request:
-    branches:
-      - feature
+    branches: [feature]
 
 jobs:
   deploy:
@@ -24,29 +22,32 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-#      # 3. Spring Boot 빌드
-#      - name: Build Spring Boot application
-#        run: ./gradlew clean build
+      # 3. 환경변수 파일 생성 (.env)
+      - name: Create .env file
+        run: |
+          cat <<EOF > .env
+          MYSQL_HOST=${{ secrets.MYSQL_HOST }}
+          MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER=${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+          MAIL_HOST=${{ secrets.MAIL_HOST }}
+          MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          EOF
 
-#      # 4. Docker 이미지 빌드
-#      - name: Build Docker Image
-#        run: docker build -t spring-boot-app:${{ github.sha }} .
-      # 4. Docker 이미지 빌드 (환경변수를 Dockerfile에 전달)
+      # 4. Spring Boot 빌드 (환경변수 적용)
+      - name: Build Spring Boot application
+        run: |
+          export $(grep -v '^#' .env | xargs)  # ✅ 환경변수 적용
+          ./gradlew clean build
+
+      # 5. Docker 이미지 빌드 (보안 강화)
       - name: Build Docker Image
         run: |
-          docker build \
-            --build-arg MYSQL_HOST=${{ secrets.MYSQL_HOST }} \
-            --build-arg MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
-            --build-arg MYSQL_USER=${{ secrets.MYSQL_USER }} \
-            --build-arg MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
-            --build-arg MAIL_HOST=${{ secrets.MAIL_HOST }} \
-            --build-arg MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \
-            --build-arg MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
-            --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
-            -t spring-boot-app:${{ github.sha }} .
-      
+          docker build -t spring-boot-app:${{ github.sha }} .
 
-      # 5. Docker Compose 파일 & 이미지 Oracle Cloud로 전송
+      # 6. Docker Compose 파일 및 이미지 Oracle Cloud로 전송
       - name: Copy files to Oracle Cloud
         uses: appleboy/scp-action@v0.1.6
         with:
@@ -56,16 +57,20 @@ jobs:
           source: "docker-compose.yml"
           target: "~/app/"
 
-      - name: Push Docker Image to Oracle Cloud
+      - name: Save & Transfer Docker Image to Oracle Cloud
+        run: |
+          docker save spring-boot-app:${{ github.sha }} | gzip > spring-boot-app.tar.gz
+
+      - name: Upload Docker Image to Oracle Cloud
         uses: appleboy/scp-action@v0.1.6
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          source: "docker save my-spring-boot-app:${{ github.sha }} | gzip"
-          target: "~/docker-images/my-spring-boot-app.tar.gz"
+          source: "spring-boot-app.tar.gz"
+          target: "~/docker-images/"
 
-      # 6. Oracle Cloud에서 Docker Compose 실행
+      # 7. Oracle Cloud에서 Docker Compose 실행
       - name: Deploy Docker Compose
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -73,15 +78,24 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
           script: |
-            # Docker Compose 중지 후 제거
+            echo "🚀 배포 시작..."
+
             cd ~/app
+
+            # 기존 컨테이너 중지 및 제거
+            echo "🛑 기존 컨테이너 중지 중..."
             docker-compose down || true
-            
-            # 기존 Docker 이미지 로드
-            gunzip -c ~/docker-images/my-spring-boot-app.tar.gz | docker 
-            
-            # .env 파일 생성 (GitHub Secrets 값 적용)
-            echo ".env 파일 생성 중..."
+
+            # 기존 Docker 이미지 삭제 (충돌 방지)
+            echo "🗑 기존 Docker 이미지 삭제 중..."
+            docker rmi -f spring-boot-app || true
+
+            # 새 Docker 이미지 로드
+            echo "🚀 새로운 Docker 이미지 로드 중..."
+            gunzip -c ~/docker-images/spring-boot-app.tar.gz | docker load
+
+            # 📌 환경변수 .env 파일 생성
+            echo "📌 .env 파일 생성 중..."
             cat <<EOF > .env
             MYSQL_HOST=${{ secrets.MYSQL_HOST }}
             MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
@@ -93,10 +107,14 @@ jobs:
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             EOF
 
-            # 환경변수 로드
-            echo "환경변수 로드 완료"
+            # 환경변수 확인 (디버깅)
+            echo "📌 생성된 .env 파일 내용:"
             cat .env
-            export $(grep -v '^#' .env | xargs)
-            
-            # Docker Compose 실행
+
+            # Docker Compose 실행 (명확한 .env 파일 지정)
+            echo "🚀 Docker Compose 실행 중..."
             docker-compose --env-file .env up -d --build
+
+            # 실행된 컨테이너 상태 확인
+            echo "📜 실행된 컨테이너 로그:"
+            docker ps -a
