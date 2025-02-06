@@ -1,42 +1,43 @@
 version: "3.8"
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: spring-boot-app:latest
+    container_name: spring-boot-app
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:3306/${MYSQL_DATABASE}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy  # MySQL이 준비된 후에 Spring Boot 실행
+
   db:
-    image: mysql:8.0  # MySQL 최신 버전
+    image: mysql:8.0
     container_name: mysql-db
     restart: always
     environment:
-
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3306:3306"  # ⚠️ 외부에서 접근할 필요 없다면 삭제 가능
-    volumes:
-      - mysql-data:/var/lib/mysql
-    healthcheck:  # ✅ MySQL이 정상적으로 실행될 때까지 대기
+      - "3306:3306"
+    healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       retries: 5
       timeout: 5s
-
-  app:
-    image: eclipse-temurin:17-jre-alpine  # Spring Boot Docker 이미지
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: spring-boot-app
-    restart: always
-    environment:
-      MYSQL_HOST: db
-    ports:
-      - "8080:8080"
-    env_file:  # ✅ .env 파일에서 환경변수 로드
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy  # ✅ MySQL이 정상적으로 실행된 후 Spring Boot 실행
 
 volumes:
   mysql-data:

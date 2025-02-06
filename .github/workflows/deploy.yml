@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. JDK 설정 (빌드용)
+      # 2. JDK 설정 (Gradle 빌드용)
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -36,29 +36,28 @@ jobs:
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           EOF
 
-      # 4. Spring Boot 빌드 (환경변수 적용)
+      # 4. Spring Boot 빌드 (Gradle)
       - name: Build Spring Boot application
         run: |
-          export $(grep -v '^#' .env | xargs)  # ✅ 환경변수 적용
-          ./gradlew clean build --no-daemon --build-cache --parallel --stacktrace
+          export $(grep -v '^#' .env | xargs)
+          ./gradlew clean build --no-daemon --stacktrace
 
-      # 5. Docker 이미지 빌드 (보안 강화)
+      # 5. Docker 이미지 빌드
       - name: Build Docker Image
         run: |
           docker build -t spring-boot-app:${{ github.sha }} .
 
-      # 6. Docker Compose 파일 및 이미지 Oracle Cloud로 전송 (⚡ 개선: rsync 사용)
-      - name: Sync files to Oracle Cloud
-        uses: burnett01/rsync-deployments@5.2
+      # 6. Docker 이미지 및 구성 파일을 원격 서버로 전송
+      - name: Transfer Docker Compose Files
+        uses: appleboy/scp-action@v0.1.6
         with:
-          switches: -avz --delete
-          path: .
-          remote_path: "~/app/"
-          remote_host: ${{ secrets.VM_HOST }}
-          remote_user: ${{ secrets.VM_USER }}
-          remote_key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          source: "docker-compose.yml, Dockerfile, .env"
+          target: "~/app/"
 
-      - name: Save & Transfer Docker Image to Oracle Cloud
+      - name: Save & Transfer Docker Image
         run: |
           docker save spring-boot-app:${{ github.sha }} | gzip > spring-boot-app.tar.gz
 
@@ -71,55 +70,29 @@ jobs:
           source: "spring-boot-app.tar.gz"
           target: "~/docker-images/"
 
-      # 7. Oracle Cloud에서 Docker Compose 실행 (⚡ 최적화)
+      # 7. 원격 서버에서 Docker Compose 실행
       - name: Deploy Docker Compose
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          timeout: 200ms
+          timeout: 1800
           script: |
             echo "🚀 배포 시작..."
-
             cd ~/app
 
-            # 기존 컨테이너 중지 및 제거
-            echo "🛑 기존 컨테이너 정리 중..."
+            # 기존 컨테이너 정리
             sudo docker-compose down --remove-orphans || true
             sudo docker stop $(sudo docker ps -aq) || true
             sudo docker rm -f $(sudo docker ps -aq) || true
             sudo docker network prune -f || true
 
-            # 기존 Docker 이미지 삭제 (⚡ 불필요한 전체 prune 방지)
-            echo "🗑 기존 Docker 이미지 삭제 중..."
+            # 기존 Docker 이미지 삭제
             sudo docker rmi -f $(sudo docker images -q) || true
 
             # 새로운 Docker 이미지 로드
-            echo "🚀 새로운 Docker 이미지 로드 중..."
             gunzip -c ~/docker-images/spring-boot-app.tar.gz | docker load
 
-            # 📌 환경변수 .env 파일 생성
-            echo "📌 .env 파일 생성 중..."
-            cat <<EOF > .env
-            MYSQL_HOST=${{ secrets.MYSQL_HOST }}
-            MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
-            MYSQL_USER=${{ secrets.MYSQL_USER }}
-            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
-            MAIL_HOST=${{ secrets.MAIL_HOST }}
-            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
-            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            EOF
-
-            # 환경변수 확인 (디버깅)
-            echo "📌 생성된 .env 파일 내용:"
-            cat .env
-
-            # Docker Compose 실행 (⚡ `--no-deps` 추가하여 의존성 기다리지 않음)
-            echo "🚀 Docker Compose 실행 중..."
-            sudo docker-compose --env-file .env up -d --no-deps --build
-
-            # 실행된 컨테이너 상태 확인
-            echo "📜 실행된 컨테이너 로그:"
-            sudo docker ps -a
+            # Docker Compose 실행
+            sudo docker-compose --env-file .env up -d --build
