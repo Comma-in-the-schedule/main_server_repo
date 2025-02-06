@@ -5,7 +5,6 @@ import gdg.comma_in_the_schedule.apiPayload.exception.handler.EmailAlreadyVerifi
 import gdg.comma_in_the_schedule.apiPayload.exception.handler.EmailTokenExpiredHandler;
 import gdg.comma_in_the_schedule.config.MailConfig;
 import gdg.comma_in_the_schedule.domain.entity.EmailToken;
-import gdg.comma_in_the_schedule.domain.entity.User;
 import gdg.comma_in_the_schedule.repository.UserRepository;
 import gdg.comma_in_the_schedule.repository.EmailTokenRepository;
 import jakarta.mail.MessagingException;
