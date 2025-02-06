@@ -68,9 +68,12 @@ jobs:
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:latest
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/mysql:latest
             
-            # 네트워크 생성
-            sudo docker network create my-network  # 네트워크 생성
-            
+            # 네트워크가 없을 경우에만 생성
+            if ! sudo docker network ls | grep -q "my-network"; then
+            sudo docker network create my-network
+            fi
+  
+  
             # MySQL 컨테이너 실행
             sudo docker run -d --name mysql-db \
               --network my-network \
@@ -86,7 +89,7 @@ jobs:
               -e SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/${{ secrets.MYSQL_DATABASE }} \
               -e SPRING_DATASOURCE_USERNAME=root \
               -e SPRING_DATASOURCE_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
-              -e JWT_SECRET=${{ secrets.JWT_SECRET }}
+              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
               -p 8080:8080 \
               --restart always \
               ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:latest
