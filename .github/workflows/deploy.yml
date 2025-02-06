@@ -90,7 +90,7 @@ jobs:
               -e SPRING_DATASOURCE_USERNAME=root \
               -e SPRING_DATASOURCE_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
-              -e MAIL_HOST=${{ secrets.MAIL_HOST }}
+              -e MAIL_HOST=${{ secrets.MAIL_HOST }} \
               -e MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \
               -e MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
               
