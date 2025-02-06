@@ -88,5 +88,4 @@ jobs:
               -e SPRING_DATASOURCE_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
               -p 8080:8080 \
               --restart always \
-              --network bridge \
               ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:latest
