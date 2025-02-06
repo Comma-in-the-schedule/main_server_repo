@@ -1,5 +1,5 @@
 # 1️⃣ 빌드 스테이지 (멀티 스테이지 빌드)
-FROM adoptopenjdk:17-jre-hotspot AS builder
+FROM eclipse-temurin:17-jre-alpine AS builder
 WORKDIR /app
 
 # 필수 패키지 설치
