@@ -44,7 +44,7 @@ WORKDIR /app
 # ✅ JAR 파일 복사 (JAR 파일을 직접 빌드 후 복사해야 함)
 COPY build/libs/*.jar app.jar
 
-RUN ./gradlew clean build
+#RUN #./gradlew clean build
 
 
 # 포트 노출
