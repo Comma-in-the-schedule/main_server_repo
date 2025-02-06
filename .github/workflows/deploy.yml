@@ -11,18 +11,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 코드 체크아웃
+      # 1️⃣ 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. JDK 설정 (Gradle 빌드용)
+      # 2️⃣ Docker 미러 설정 (속도 개선)
+      - name: Configure Docker Daemon for Mirror
+        run: |
+          sudo mkdir -p /etc/docker
+          echo '{
+            "registry-mirrors": [
+              "https://mirror.gcr.io",
+              "https://hub-mirror.c.163.com"
+            ]
+          }' | sudo tee /etc/docker/daemon.json
+          sudo systemctl restart docker
+
+      # 3️⃣ JDK 설정 (Gradle 빌드용)
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. 환경변수 파일 생성 (.env)
+      # 4️⃣ Docker 이미지 미리 다운로드
+      - name: Manually Pull Docker Image
+        run: |
+          docker pull eclipse-temurin:17-jre-alpine || docker pull amazoncorretto:17-alpine
+
+      # 5️⃣ 환경변수 파일 생성 (.env)
       - name: Create .env file
         run: |
           cat <<EOF > .env
@@ -36,18 +53,18 @@ jobs:
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           EOF
 
-      # 4. Spring Boot 빌드 (Gradle)
+      # 6️⃣ Spring Boot 빌드 (Gradle)
       - name: Build Spring Boot application
         run: |
           export $(grep -v '^#' .env | xargs)
           ./gradlew clean build --no-daemon --stacktrace
 
-      # 5. Docker 이미지 빌드
-      - name: Build Docker Image
+      # 7️⃣ Docker 이미지 빌드 (캐시 활용)
+      - name: Build Docker Compose with Cache
         run: |
-          docker build -t spring-boot-app:${{ github.sha }} .
+          docker-compose build --pull=never
 
-      # 6. Docker 이미지 및 구성 파일을 원격 서버로 전송
+      # 8️⃣ Docker 이미지 및 구성 파일을 원격 서버로 전송
       - name: Transfer Docker Compose Files
         uses: appleboy/scp-action@v0.1.6
         with:
@@ -70,14 +87,14 @@ jobs:
           source: "spring-boot-app.tar.gz"
           target: "~/docker-images/"
 
-      # 7. 원격 서버에서 Docker Compose 실행
+      # 9️⃣ 원격 서버에서 Docker Compose 실행
       - name: Deploy Docker Compose
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          timeout: 1800ms
+          timeout: 200ms
           script: |
             echo "🚀 배포 시작..."
             cd ~/app

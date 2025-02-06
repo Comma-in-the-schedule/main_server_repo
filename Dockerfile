@@ -1,5 +1,5 @@
 # 1️⃣ 빌드 스테이지
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM amazoncorretto:17-alpine AS builder
 WORKDIR /app
 
 # 필수 패키지 설치
