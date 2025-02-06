@@ -22,14 +22,14 @@ services:
       timeout: 5s
 
   app:
-    image: spring-boot-app:latest  # Spring Boot Docker 이미지
+    image: adoptopenjdk:17-jre-hotspot  # Spring Boot Docker 이미지
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: spring-boot-app
     restart: always
     environment:
       MYSQL_HOST: db
-    build:
-      context: .
-      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     env_file:  # ✅ .env 파일에서 환경변수 로드
