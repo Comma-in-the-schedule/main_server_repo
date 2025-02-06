@@ -15,35 +15,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ Docker 미러 설정 (속도 개선)
-      - name: Configure Docker Daemon for Mirror
+      # 2️⃣ Docker BuildKit 활성화
+      - name: Enable Docker BuildKit
         run: |
-          sudo mkdir -p /etc/docker
-          echo '{
-            "registry-mirrors": [
-              "https://mirror.gcr.io",
-              "https://hub-mirror.c.163.com"
-            ]
-          }' | sudo tee /etc/docker/daemon.json
-          sudo systemctl restart docker
-      - name: Install Docker Compose
+          export DOCKER_BUILDKIT=1
+
+      # 3️⃣ Docker Buildx 설치
+      - name: Install Docker Buildx
         run: |
           sudo apt-get update
-          sudo apt-get install -y docker-compose
+          sudo apt-get install -y docker-buildx-plugin
 
-      # 3️⃣ JDK 설정 (Gradle 빌드용)
+      # 4️⃣ JDK 설정 (Gradle 빌드용)
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 4️⃣ Docker 이미지 미리 다운로드
+      # 5️⃣ Docker 이미지 미리 다운로드
       - name: Manually Pull Docker Image
         run: |
-          docker pull eclipse-temurin:17-jre-alpine || docker pull amazoncorretto:17-alpine
+          sudo docker pull eclipse-temurin:17-jre-alpine || sudo docker pull amazoncorretto:17-alpine
 
-      # 5️⃣ 환경변수 파일 생성 (.env)
+      # 6️⃣ 환경변수 파일 생성 (.env)
       - name: Create .env file
         run: |
           cat <<EOF > .env
@@ -57,18 +52,18 @@ jobs:
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           EOF
 
-      # 6️⃣ Spring Boot 빌드 (Gradle)
+      # 7️⃣ Spring Boot 빌드 (Gradle)
       - name: Build Spring Boot application
         run: |
           export $(grep -v '^#' .env | xargs)
           ./gradlew clean build --no-daemon --stacktrace
 
-      # 7️⃣ Docker 이미지 빌드 (캐시 활용)
-      - name: Build Docker Compose with Cache
+      # 8️⃣ Docker Buildx를 사용하여 Docker 이미지 빌드
+      - name: Build Docker Image with Buildx
         run: |
-          sudo docker-compose build --pull=never
+          sudo docker buildx build --platform linux/amd64 -t spring-boot-app:${{ github.sha }} .
 
-      # 8️⃣ Docker 이미지 및 구성 파일을 원격 서버로 전송
+      # 9️⃣ Docker 이미지 및 구성 파일을 원격 서버로 전송
       - name: Transfer Docker Compose Files
         uses: appleboy/scp-action@v0.1.6
         with:
@@ -91,7 +86,7 @@ jobs:
           source: "spring-boot-app.tar.gz"
           target: "~/docker-images/"
 
-      # 9️⃣ 원격 서버에서 Docker Compose 실행
+      # 🔟 원격 서버에서 Docker Compose 실행
       - name: Deploy Docker Compose
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -113,7 +108,7 @@ jobs:
             sudo docker rmi -f $(sudo docker images -q) || true
 
             # 새로운 Docker 이미지 로드
-            gunzip -c ~/docker-images/spring-boot-app.tar.gz | docker load
+            gunzip -c ~/docker-images/spring-boot-app.tar.gz | sudo docker load
 
             # Docker Compose 실행
             sudo docker-compose --env-file .env up -d --build
