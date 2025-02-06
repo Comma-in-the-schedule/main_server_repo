@@ -1,5 +1,4 @@
-# 1️⃣ 빌드 스테이지
-FROM amazoncorretto:17-alpine AS builder
+FROM eclipse-temurin:17-jdk-alpine AS builder
 WORKDIR /app
 
 # 필수 패키지 설치
@@ -20,7 +19,7 @@ RUN ./gradlew dependencies --no-daemon
 # Spring Boot 애플리케이션 빌드
 RUN ./gradlew clean build --no-daemon --stacktrace
 
-# 2️⃣ 실행 스테이지
+# 실행 스테이지
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 

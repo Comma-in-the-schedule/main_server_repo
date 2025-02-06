@@ -1,4 +1,4 @@
-name: Deploy Spring Boot with Docker Compose
+name: Deploy Spring Boot and MySQL to Docker Hub
 
 on:
   push:
@@ -15,100 +15,73 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ Docker BuildKit 활성화
-      - name: Enable Docker BuildKit
-        run: |
-          export DOCKER_BUILDKIT=1
-
-      # 3️⃣ Docker Buildx 활성화 (설치 과정 제거)
-      - name: Enable Docker Buildx
-        run: |
-          docker buildx create --use
-          docker buildx ls
-
-      # 4️⃣ JDK 설정 (Gradle 빌드용)
+      # 2️⃣ JDK 설정 (Gradle 빌드용)
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 5️⃣ Docker 이미지 미리 다운로드
-      - name: Manually Pull Docker Image
-        run: |
-          docker pull eclipse-temurin:17-jre-alpine || docker pull amazoncorretto:17-alpine
-
-      # 6️⃣ 환경변수 파일 생성 (.env)
-      - name: Create .env file
-        run: |
-          cat <<EOF > .env
-          MYSQL_HOST=${{ secrets.MYSQL_HOST }}
-          MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
-          MYSQL_USER=${{ secrets.MYSQL_USER }}
-          MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
-          MAIL_HOST=${{ secrets.MAIL_HOST }}
-          MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
-          MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          EOF
-
-      # 7️⃣ Spring Boot 빌드 (Gradle)
+      # 3️⃣ Spring Boot 빌드 (Gradle)
       - name: Build Spring Boot application
         run: |
-          export $(grep -v '^#' .env | xargs)
           ./gradlew clean build --no-daemon --stacktrace
 
-      # 8️⃣ Docker Buildx를 사용하여 Docker 이미지 빌드
-      - name: Build Docker Image with Buildx
+      # 4️⃣ Docker 로그인 (Docker Hub)
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # 5️⃣ Docker 이미지 빌드 & 태깅 (Spring Boot)
+      - name: Build and Tag Spring Boot Docker Image
         run: |
-          docker buildx build --platform linux/amd64 -t spring-boot-app:${{ github.sha }} .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }} .
+          docker tag ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:latest
 
-      # 9️⃣ Docker 이미지 및 구성 파일을 원격 서버로 전송
-      - name: Transfer Docker Compose Files
-        uses: appleboy/scp-action@v0.1.6
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          source: "docker-compose.yml, Dockerfile, .env"
-          target: "~/app/"
-
-      - name: Save & Transfer Docker Image
+      # 6️⃣ Docker 이미지 빌드 & 태깅 (MySQL)
+      - name: Build and Tag MySQL Docker Image
         run: |
-          docker save spring-boot-app:${{ github.sha }} | gzip > spring-boot-app.tar.gz
+          docker pull mysql:8.0
+          docker tag mysql:8.0 ${{ secrets.DOCKER_USERNAME }}/mysql:latest
 
-      - name: Upload Docker Image to Oracle Cloud
-        uses: appleboy/scp-action@v0.1.6
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          source: "spring-boot-app.tar.gz"
-          target: "~/docker-images/"
+      # 7️⃣ Docker Hub에 Spring Boot & MySQL 이미지 푸시
+      - name: Push Docker Images to Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/mysql:latest
 
-      # 🔟 원격 서버에서 Docker Compose 실행
-      - name: Deploy Docker Compose
+      # 8️⃣ 원격 서버에서 컨테이너 실행 (SSH)
+      - name: Deploy to Remote Server
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          timeout: 3600
           script: |
             echo "🚀 배포 시작..."
-            cd ~/app
-
-            # 기존 컨테이너 정리
-            sudo docker-compose down --remove-orphans || true
-            sudo docker stop $(sudo docker ps -aq) || true
-            sudo docker rm -f $(sudo docker ps -aq) || true
-            sudo docker network prune -f || true
-
-            # 기존 Docker 이미지 삭제
-            sudo docker rmi -f $(sudo docker images -q) || true
-
-            # 새로운 Docker 이미지 로드
-            gunzip -c ~/docker-images/spring-boot-app.tar.gz | sudo docker load
-
-            # Docker Compose 실행
-            sudo docker-compose --env-file .env up -d --build
+            
+            # 기존 컨테이너 중지 & 삭제
+            sudo docker stop spring-boot-app mysql-db || true
+            sudo docker rm -f spring-boot-app mysql-db || true
+            
+            # 최신 이미지 가져오기
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/mysql:latest
+            
+            # MySQL 컨테이너 실행
+            sudo docker run -d --name mysql-db \
+              -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
+              -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
+              -p 3306:3306 \
+              --restart always \
+              ${{ secrets.DOCKER_USERNAME }}/mysql:latest
+            
+            # Spring Boot 컨테이너 실행
+            sudo docker run -d --name spring-boot-app \
+              -e SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/${{ secrets.MYSQL_DATABASE }} \
+              -e SPRING_DATASOURCE_USERNAME=root \
+              -e SPRING_DATASOURCE_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
+              -p 8080:8080 \
+              --restart always \
+              --network bridge \
+              ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:latest

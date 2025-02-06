@@ -1,44 +1,43 @@
-version: "3.8"
-
-services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: spring-boot-app:latest
-    container_name: spring-boot-app
-    restart: always
-    ports:
-      - "8080:8080"
-    environment:
-      - DOCKER_BUILDKIT=1
-      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:3306/${MYSQL_DATABASE}
-      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
-      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
-      MAIL_HOST: ${MAIL_HOST}
-      MAIL_USERNAME: ${MAIL_USERNAME}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy  # MySQL이 준비된 후에 Spring Boot 실행
-
-  db:
-    image: mysql:8.0
-    container_name: mysql-db
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      retries: 5
-      timeout: 5s
-
-volumes:
-  mysql-data:
+#version: "3.8"
+#
+#services:
+#  app:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    image: spring-boot-app:latest
+#    container_name: spring-boot-app
+#    restart: always
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:3306/${MYSQL_DATABASE}
+#      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+#      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+#      MAIL_HOST: ${MAIL_HOST}
+#      MAIL_USERNAME: ${MAIL_USERNAME}
+#      MAIL_PASSWORD: ${MAIL_PASSWORD}
+#      JWT_SECRET: ${JWT_SECRET}
+#    env_file:
+#      - .env
+#    depends_on:
+#      db:
+#        condition: service_healthy  # MySQL이 준비된 후에 Spring Boot 실행
+#
+#  db:
+#    image: mysql:8.0
+#    container_name: mysql-db
+#    restart: always
+#    environment:
+#      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+#      MYSQL_DATABASE: ${MYSQL_DATABASE}
+#    ports:
+#      - "3306:3306"
+#    healthcheck:
+#      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+#      interval: 10s
+#      retries: 5
+#      timeout: 5s
+#
+#volumes:
+#  mysql-data:
