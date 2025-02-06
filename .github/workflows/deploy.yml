@@ -76,5 +76,5 @@ jobs:
             # 최신 Docker 이미지 가져오기
             docker pull ${{ secrets.DOCKER_USERNAME }}/myapp:latest
 
-            # Docker Compose 실행 (환경 변수 파일 적용 및 `application.yaml` 마운트)
+            # Docker Compose 실행
             docker-compose up -d --env-file .env
