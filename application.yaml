@@ -26,6 +26,6 @@ spring:
           starttls:
             enable: true
             required: true
-
+#
 jwt:
   secret: ${JWT_SECRET}
