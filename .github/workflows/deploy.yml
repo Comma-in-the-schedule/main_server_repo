@@ -77,6 +77,7 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          command_timeout: 1800
           script: |
             echo "🚀 배포 시작..."
 
