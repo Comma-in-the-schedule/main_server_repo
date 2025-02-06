@@ -80,7 +80,6 @@ jobs:
               -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
               -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
               -p 3306:3306 \
-              --restart always \
               ${{ secrets.DOCKER_USERNAME }}/mysql:latest
             
             # Spring Boot 컨테이너 실행
@@ -94,5 +93,4 @@ jobs:
               -e MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \
               -e MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
               -p 8080:8080 \
-              --restart always \
               ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:latest
