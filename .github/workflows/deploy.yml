@@ -62,7 +62,7 @@ jobs:
       # 7️⃣ Docker 이미지 빌드 (캐시 활용)
       - name: Build Docker Compose with Cache
         run: |
-          docker-compose build --pull=never
+          sudo docker-compose build --pull=never
 
       # 8️⃣ Docker 이미지 및 구성 파일을 원격 서버로 전송
       - name: Transfer Docker Compose Files
@@ -76,7 +76,7 @@ jobs:
 
       - name: Save & Transfer Docker Image
         run: |
-          docker save spring-boot-app:${{ github.sha }} | gzip > spring-boot-app.tar.gz
+          sudo docker save spring-boot-app:${{ github.sha }} | gzip > spring-boot-app.tar.gz
 
       - name: Upload Docker Image to Oracle Cloud
         uses: appleboy/scp-action@v0.1.6
