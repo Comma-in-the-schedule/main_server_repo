@@ -20,11 +20,11 @@ jobs:
         run: |
           export DOCKER_BUILDKIT=1
 
-      # 3️⃣ Docker Buildx 설치
-      - name: Install Docker Buildx
+      # 3️⃣ Docker Buildx 활성화 (설치 과정 제거)
+      - name: Enable Docker Buildx
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-buildx-plugin
+          docker buildx create --use
+          docker buildx ls
 
       # 4️⃣ JDK 설정 (Gradle 빌드용)
       - name: Set up JDK
@@ -36,7 +36,7 @@ jobs:
       # 5️⃣ Docker 이미지 미리 다운로드
       - name: Manually Pull Docker Image
         run: |
-          sudo docker pull eclipse-temurin:17-jre-alpine || sudo docker pull amazoncorretto:17-alpine
+          docker pull eclipse-temurin:17-jre-alpine || docker pull amazoncorretto:17-alpine
 
       # 6️⃣ 환경변수 파일 생성 (.env)
       - name: Create .env file
@@ -61,7 +61,7 @@ jobs:
       # 8️⃣ Docker Buildx를 사용하여 Docker 이미지 빌드
       - name: Build Docker Image with Buildx
         run: |
-          sudo docker buildx build --platform linux/amd64 -t spring-boot-app:${{ github.sha }} .
+          docker buildx build --platform linux/amd64 -t spring-boot-app:${{ github.sha }} .
 
       # 9️⃣ Docker 이미지 및 구성 파일을 원격 서버로 전송
       - name: Transfer Docker Compose Files
@@ -75,7 +75,7 @@ jobs:
 
       - name: Save & Transfer Docker Image
         run: |
-          sudo docker save spring-boot-app:${{ github.sha }} | gzip > spring-boot-app.tar.gz
+          docker save spring-boot-app:${{ github.sha }} | gzip > spring-boot-app.tar.gz
 
       - name: Upload Docker Image to Oracle Cloud
         uses: appleboy/scp-action@v0.1.6
@@ -93,7 +93,7 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          timeout: 3600ms
+          timeout: 3600
           script: |
             echo "🚀 배포 시작..."
             cd ~/app
