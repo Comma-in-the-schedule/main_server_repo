@@ -49,6 +49,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Verify docker-compose.yml and Dockerfile existence
+        run: |
+          ls -l
+          
       - name: Upload files to EC2
         uses: appleboy/scp-action@master
         with:
