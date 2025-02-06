@@ -98,7 +98,7 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          timeout: 200ms
+          timeout: 3600ms
           script: |
             echo "🚀 배포 시작..."
             cd ~/app
