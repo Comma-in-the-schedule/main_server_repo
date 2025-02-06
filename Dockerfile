@@ -26,6 +26,9 @@ WORKDIR /app
 # JAR 파일 복사
 COPY --from=builder /app/build/libs/*.jar /app/app.jar
 
+#application.yaml 파일도 복사
+COPY src/main/resources/application.yaml /app/application.yaml
+
 # Spring Boot 실행을 위한 포트 노출
 EXPOSE 8080
 
