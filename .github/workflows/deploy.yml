@@ -40,22 +40,23 @@ jobs:
       - name: Build Spring Boot application
         run: |
           export $(grep -v '^#' .env | xargs)  # ✅ 환경변수 적용
-          ./gradlew clean build
+          ./gradlew clean build --no-daemon --build-cache --parallel --stacktrace
 
       # 5. Docker 이미지 빌드 (보안 강화)
       - name: Build Docker Image
         run: |
           docker build -t spring-boot-app:${{ github.sha }} .
 
-      # 6. Docker Compose 파일 및 이미지 Oracle Cloud로 전송
-      - name: Copy files to Oracle Cloud
-        uses: appleboy/scp-action@v0.1.6
+      # 6. Docker Compose 파일 및 이미지 Oracle Cloud로 전송 (⚡ 개선: rsync 사용)
+      - name: Sync files to Oracle Cloud
+        uses: burnett01/rsync-deployments@5.2
         with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          source: "docker-compose.yml, Dockerfile, gradlew, gradle/*, build.gradle, settings.gradle, src/*"
-          target: "~/app/"
+          switches: -avz --delete
+          path: .
+          remote_path: "~/app/"
+          remote_host: ${{ secrets.VM_HOST }}
+          remote_user: ${{ secrets.VM_USER }}
+          remote_key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
 
       - name: Save & Transfer Docker Image to Oracle Cloud
         run: |
@@ -70,33 +71,31 @@ jobs:
           source: "spring-boot-app.tar.gz"
           target: "~/docker-images/"
 
-      # 7. Oracle Cloud에서 Docker Compose 실행
+      # 7. Oracle Cloud에서 Docker Compose 실행 (⚡ 최적화)
       - name: Deploy Docker Compose
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          command_timeout: 1800ms
+          timeout: 200ms
           script: |
             echo "🚀 배포 시작..."
 
             cd ~/app
 
             # 기존 컨테이너 중지 및 제거
-            echo "🛑 기존 컨테이너 중지 중..."
-            sudo docker-compose down || true
+            echo "🛑 기존 컨테이너 정리 중..."
+            sudo docker-compose down --remove-orphans || true
             sudo docker stop $(sudo docker ps -aq) || true
             sudo docker rm -f $(sudo docker ps -aq) || true
             sudo docker network prune -f || true
 
-
-            # 기존 Docker 이미지 삭제 (충돌 방지)
+            # 기존 Docker 이미지 삭제 (⚡ 불필요한 전체 prune 방지)
             echo "🗑 기존 Docker 이미지 삭제 중..."
             sudo docker rmi -f $(sudo docker images -q) || true
-            sudo docker system prune -a -f || true
 
-            # 새 Docker 이미지 로드
+            # 새로운 Docker 이미지 로드
             echo "🚀 새로운 Docker 이미지 로드 중..."
             gunzip -c ~/docker-images/spring-boot-app.tar.gz | docker load
 
@@ -117,9 +116,9 @@ jobs:
             echo "📌 생성된 .env 파일 내용:"
             cat .env
 
-            # Docker Compose 실행 (명확한 .env 파일 지정)
+            # Docker Compose 실행 (⚡ `--no-deps` 추가하여 의존성 기다리지 않음)
             echo "🚀 Docker Compose 실행 중..."
-            sudo docker-compose --env-file .env up -d --build
+            sudo docker-compose --env-file .env up -d --no-deps --build
 
             # 실행된 컨테이너 상태 확인
             echo "📜 실행된 컨테이너 로그:"
