@@ -29,8 +29,9 @@ WORKDIR /app
 
 ## 빌드된 JAR 파일 복사
 #COPY --from=builder /app/build/libs/*.jar app.jar
+#ARG JAR_FILE=./build/libs/*-SNAPSHOT.jar
 #  JAR 파일이 정확히 하나만 복사되도록 설정
-COPY --from=builder /app/build/libs/*.jar /app/app.jar
+COPY --from=builder /app/build/libs/*-SNAPSHOT.jar /app/app.jar
 
 # 환경변수 적용을 위한 .env 파일 복사 (선택 사항)
 # COPY .env .env
