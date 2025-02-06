@@ -93,7 +93,6 @@ jobs:
               -e MAIL_HOST=${{ secrets.MAIL_HOST }} \
               -e MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \
               -e MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
-              
               -p 8080:8080 \
               --restart always \
               ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:latest
