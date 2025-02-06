@@ -3,7 +3,7 @@ name: Deploy to EC2 with Docker
 on:
   push:
     branches:
-      - CI/CD
+      - CI-CD
   pull_request:
     branches:
       - feature
