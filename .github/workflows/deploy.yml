@@ -30,8 +30,8 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/comma-server:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/comma-server:latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
