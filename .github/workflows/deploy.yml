@@ -60,10 +60,12 @@ jobs:
             sudo mkdir -p /home/ubuntu/myapp/config
 
       - name: Ensure File Permissions
-        run: chmod -R 644 .
+        run: |
+          sudo chmod -R 644 .
 
       - name: Verify Current Directory
-        run: pwd
+        run: |
+          pwd
 
       - name: Verify files before SCP
         run: |
