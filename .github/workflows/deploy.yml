@@ -21,6 +21,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+      - name: Set up application.properties
+        run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yaml
 
       - name: Build Spring Boot Application
         run: |
@@ -43,13 +45,14 @@ jobs:
             docker stop comma-server || true
             docker rm comma-server || true
             docker pull ${{ secrets.DOCKER_USERNAME }}/comma-server:latest
-            docker run -d --name comma-server -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/comma-server:latest \
-              -e MYSQL_HOST= "${{ secrets.MYSQL_HOST }}" \
-              -e MYSQL_DATABASE= "${{ secrets.MYSQL_DATABASE }}" \
-              -e MYSQL_USER= "${{ secrets.MYSQL_USER }}" \
-              -e MYSQL_PASSWORD= "${{ secrets.MYSQL_PASSWORD }}" \
-              -e MAIL_HOST= "${{ secrets.MAIL_HOST }}" \
-              -e MAIL_USERNAME= "${{ secrets.MAIL_USERNAME }}" \
-              -e MAIL_PASSWORD= "${{ secrets.MAIL_PASSWORD }}" \
-              -e JWT_SECRET= "${{ secrets.JWT_SECRET }}" \
+            docker run -d --name comma-server -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/comma-server:latest
+            docker image prune -a -f
+#              -e MYSQL_HOST= "${{ secrets.MYSQL_HOST }}" \
+#              -e MYSQL_DATABASE= "${{ secrets.MYSQL_DATABASE }}" \
+#              -e MYSQL_USER= "${{ secrets.MYSQL_USER }}" \
+#              -e MYSQL_PASSWORD= "${{ secrets.MYSQL_PASSWORD }}" \
+#              -e MAIL_HOST= "${{ secrets.MAIL_HOST }}" \
+#              -e MAIL_USERNAME= "${{ secrets.MAIL_USERNAME }}" \
+#              -e MAIL_PASSWORD= "${{ secrets.MAIL_PASSWORD }}" \
+#              -e JWT_SECRET= "${{ secrets.JWT_SECRET }}" \
 
