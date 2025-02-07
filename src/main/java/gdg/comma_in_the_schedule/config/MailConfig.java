@@ -11,14 +11,26 @@ import java.util.Properties;
 
 @Configuration
 public class MailConfig {
+    @Value("${MAIL_HOST}")
+    private String mailHost;
+
+    @Value("${MAIL_USERNAME}")
+    private String mailUsername;
+
+    @Value("${MAIL_PASSWORD}")
+    private String mailPassword;
 
     @Bean
     public JavaMailSender javaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost(System.getenv("MAIL_HOST"));
+//        mailSender.setHost(System.getenv("MAIL_HOST"));
+//        mailSender.setPort(587);
+//        mailSender.setUsername(System.getenv("MAIL_USERNAME"));
+//        mailSender.setPassword(System.getenv("MAIL_PASSWORD"));
+        mailSender.setHost(mailHost);
         mailSender.setPort(587);
-        mailSender.setUsername(System.getenv("MAIL_USERNAME"));
-        mailSender.setPassword(System.getenv("MAIL_PASSWORD"));
+        mailSender.setUsername(mailUsername);
+        mailSender.setPassword(mailPassword);
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.smtp.auth", "true");
