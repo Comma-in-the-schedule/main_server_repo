@@ -59,9 +59,17 @@ jobs:
           script: |
             sudo mkdir -p /home/ubuntu/myapp/config
 
+      - name: Ensure File Permissions
+        run: chmod -R 644 .
+
+      - name: Verify Current Directory
+        run: pwd
+
       - name: Verify files before SCP
         run: |
           ls -l
+      
+
 
       - name: Upload files to EC2
         uses: appleboy/scp-action@master
