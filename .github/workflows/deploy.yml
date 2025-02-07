@@ -74,7 +74,7 @@ jobs:
 
       - name: Verify files before SCP
         run: |
-          ls -l
+          sudo ls -l
       
 
 
@@ -88,6 +88,8 @@ jobs:
             docker-compose.yml
             Dockerfile
           target: "/home/ubuntu/myapp/"
+
+
 
       - name: Create config directory and save application.yaml
         uses: appleboy/ssh-action@master
