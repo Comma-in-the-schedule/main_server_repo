@@ -59,13 +59,18 @@ jobs:
           script: |
             sudo mkdir -p /home/ubuntu/myapp/config
 
+      - name: Verify File Permissions
+        run: |
+          echo "Checking file permissions..."
+          ls -la
+
       - name: Ensure File Permissions
         run: |
           sudo chmod -R 644 .
 
       - name: Verify Current Directory
         run: |
-          pwd
+          sudo pwd
 
       - name: Verify files before SCP
         run: |
