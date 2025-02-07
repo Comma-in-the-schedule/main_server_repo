@@ -26,6 +26,11 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew clean bootJar
+          
+      - name: Verify Repository Files
+        run: |
+          echo "Checking workspace files..."
+          ls -l
 
       - name: Verify JAR file existence
         run: |
