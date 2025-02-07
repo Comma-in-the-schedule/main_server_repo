@@ -50,7 +50,7 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             mkdir -p /home/ubuntu/myapp/config
 
@@ -59,7 +59,7 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           source: |
             docker-compose.yml
             Dockerfile
@@ -70,7 +70,7 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             mkdir -p /home/ubuntu/myapp/config
             echo "${{ secrets.APPLICATION_YAML }}" | base64 --decode > /home/ubuntu/myapp/config/application.yaml
@@ -83,12 +83,12 @@ jobs:
         with:
           username: ubuntu
           host: ${{ secrets.EC2_HOST }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           envs: APP, COMPOSE
           script_stop: true
           script: |
             cd /home/ubuntu/myapp
             sudo docker compose down
-            sudo docker pull ${{ secrets.DOCKER_REPO }}/preonb
+            sudo docker pull shimhun/preonb
             export $(cat .env | xargs)  # 🟢 환경 변수 로드
             sudo docker compose up -d
