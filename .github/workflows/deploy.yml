@@ -43,7 +43,7 @@ jobs:
             docker stop comma-server || true
             docker rm comma-server || true
             docker pull ${{ secrets.DOCKER_USERNAME }}/comma-server:latest
-            docker run -d --name comma-server -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/comma-server:latest
+            docker run -d --name comma-server -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/comma-server:latest \
               -e MYSQL_HOST=${{ secrets.MYSQL_HOST }} \
               -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
               -e MYSQL_USER=${{ secrets.MYSQL_USER }} \
