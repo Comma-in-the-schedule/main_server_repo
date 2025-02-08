@@ -10,13 +10,13 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/surveys")
+@RequestMapping("/membership/survey")
 public class SurveyController {
 
     private final SurveyService surveyService;
 
     // POST: 설문 데이터 저장
-    @PostMapping("/save")
+    @PostMapping
     public ApiResponse<?> createSurvey(@RequestBody SurveyRequestDTO request) {
         surveyService.createSurvey(request);
         return ApiResponse.onSuccess(null);
