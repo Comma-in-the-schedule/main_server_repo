@@ -24,6 +24,13 @@ public class EmailToken {
     @Column(unique = true)
     private String verificationCode; // UUID 기반 인증 코드
 
+    @Column(nullable = false)
+    private Boolean isVerified; //인증 여부 확인
+
     @Column
     private LocalDateTime expiresAt; // 인증 코드 만료 시간
+
+    public void setVerified(Boolean verified) {
+        isVerified = verified;
+    }
 }
