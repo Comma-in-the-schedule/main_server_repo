@@ -38,10 +38,13 @@ out/
 
 #database connection info
 application.properties
-#application.yaml
 application-dev.yaml
+application.yaml
 src/main/resources/application.yml
 build/resources/main/application.yml
 build/
 .gradle/
 db/
+
+#환경
+.env

@@ -1,6 +1,4 @@
 spring:
-  profiles:
-      active: dev
   application:
     name: comma-in-the-schedule
   datasource:
@@ -15,7 +13,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
   mail:
-    host: ${MAIL_HOST}
+    host: smtp.gmail.com
     port: 587
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
@@ -26,6 +24,5 @@ spring:
           starttls:
             enable: true
             required: true
-
 jwt:
   secret: ${JWT_SECRET}
