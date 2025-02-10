@@ -33,7 +33,7 @@ public class EmailController {
     }
 
     //인증 완료 확인
-    @GetMapping("/check")
+    @PostMapping("/check")
     public ApiResponse<?> checkEmail(@RequestBody EmailDTO emailDTO){
         log.info("Checking email with code {}", emailDTO.getEmail());
         emailService.checkVerificationComplete(emailDTO.getEmail());
