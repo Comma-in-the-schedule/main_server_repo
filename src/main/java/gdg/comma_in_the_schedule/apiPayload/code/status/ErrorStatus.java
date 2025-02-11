@@ -16,10 +16,11 @@ public enum ErrorStatus implements BaseErrorCode {
 
     _USER_EXISTS(HttpStatus.BAD_REQUEST, "USER100", "이미 가입된 유저입니다."),
     _USER_NOT_EXISTS(HttpStatus.BAD_REQUEST, "USER101", "해당 유저가 존재하지 않습니다."),
-    _PASSSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "USER102", "비밀번호가 일치하지 않습니다"),
-    _EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "USER103", "이메일 인증이 완료되지 않았습니다"),
-    _EMAIL_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST, "USER104", "이메일 토큰이 만료되었습니다"),
-    _EMAIL_AlREADY_VERIFIED(HttpStatus.BAD_REQUEST, "USER105", "이미 인증을 완료한 이메일입니다")
+    _PASSSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "USER102", "비밀번호가 일치하지 않습니다."),
+    _EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "USER103", "이메일 인증이 완료되지 않았습니다."),
+    _EMAIL_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST, "USER104", "이메일 토큰이 만료되었습니다."),
+    _EMAIL_AlREADY_VERIFIED(HttpStatus.BAD_REQUEST, "USER105", "이미 인증을 완료한 이메일입니다."),
+    _EMAIL_TOKEN_NOT_EXISTS(HttpStatus.BAD_REQUEST, "USER106", "인증을 시도한 유저가 아닙니다.")
     ;
 
     private final HttpStatus httpStatus;

@@ -28,11 +28,16 @@ public class GlobalException {
         return ApiResponse.onFailure(handler.getErrorReason().getCode(), handler.getMessage(), ErrorStatus._EMAIL_AlREADY_VERIFIED);
     }
     @ExceptionHandler(EmailNotVerifiedHandler.class)
-    public ApiResponse<ErrorStatus> handlePasswordNotMatchException(EmailNotVerifiedHandler handler) {
+    public ApiResponse<ErrorStatus> handleEmailNotVerifiedException(EmailNotVerifiedHandler handler) {
         return ApiResponse.onFailure(handler.getErrorReason().getCode(), handler.getMessage(), ErrorStatus._EMAIL_NOT_VERIFIED);
     }
     @ExceptionHandler(EmailTokenExpiredHandler.class)
-    public ApiResponse<ErrorStatus> handlePasswordNotMatchException(EmailTokenExpiredHandler handler) {
+    public ApiResponse<ErrorStatus> handleEmailTokenExpiredException(EmailTokenExpiredHandler handler) {
         return ApiResponse.onFailure(handler.getErrorReason().getCode(), handler.getMessage(), ErrorStatus._EMAIL_TOKEN_EXPIRED);
+    }
+
+    @ExceptionHandler(UserNotAttemptsVerificationHandler.class)
+    public ApiResponse<ErrorStatus> handleUserNotAttempsVerificationException(UserNotAttemptsVerificationHandler handler) {
+        return ApiResponse.onFailure(handler.getErrorReason().getCode(), handler.getMessage(), ErrorStatus._EMAIL_TOKEN_NOT_EXISTS);
     }
 }

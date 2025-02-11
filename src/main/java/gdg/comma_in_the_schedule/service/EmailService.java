@@ -4,6 +4,7 @@ import gdg.comma_in_the_schedule.apiPayload.code.status.ErrorStatus;
 import gdg.comma_in_the_schedule.apiPayload.exception.handler.EmailAlreadyVerifiedHandler;
 import gdg.comma_in_the_schedule.apiPayload.exception.handler.EmailNotVerifiedHandler;
 import gdg.comma_in_the_schedule.apiPayload.exception.handler.EmailTokenExpiredHandler;
+import gdg.comma_in_the_schedule.apiPayload.exception.handler.UserNotAttemptsVerificationHandler;
 import gdg.comma_in_the_schedule.config.MailConfig;
 import gdg.comma_in_the_schedule.domain.entity.EmailToken;
 import gdg.comma_in_the_schedule.repository.UserRepository;
@@ -133,6 +134,7 @@ public class EmailService {
             if(!emailToken.getIsVerified()){ //인증이 완료되지 않았을 때
                 throw new EmailNotVerifiedHandler(ErrorStatus._EMAIL_NOT_VERIFIED);
             }
-        }
+        }else{
+            throw new UserNotAttemptsVerificationHandler(ErrorStatus._EMAIL_TOKEN_NOT_EXISTS);        }
     }
 }
