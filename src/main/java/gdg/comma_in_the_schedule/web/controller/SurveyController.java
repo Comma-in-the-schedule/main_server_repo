@@ -25,6 +25,14 @@ public class SurveyController {
     // GET: 특정 userid로 설문 데이터 조회
     @GetMapping("/user/{userid}")
     public ApiResponse<List<?>> getSurveysByUserid(@PathVariable Long userid) {
-        return ApiResponse.onSuccess(surveyService.getSurveysByUserid(userid));
+        List<?> surveys = surveyService.getSurveysByUserid(userid);
+
+        // 데이터가 없는 경우 실패 응답 반환
+        if (surveys.isEmpty()) {
+            return ApiResponse.onFailure("404", "User ID " + userid + " does not exist", null);
+        }
+
+        // 데이터가 있는 경우 성공 응답 반환
+        return ApiResponse.onSuccess(surveys);
     }
 }

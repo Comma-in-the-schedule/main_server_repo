@@ -26,6 +26,4 @@ public class Survey {
     @Column(length = 20)
     private String hobby;
 
-    @Column(length = 20)
-    private String nickname;
 }

@@ -9,5 +9,4 @@ public class SurveyRequestDTO {
     private Long userId;
     private String location;
     private String hobby;
-    private String nickname;
 }

@@ -23,7 +23,6 @@ public class SurveyService {
                 .userid(request.getUserId())
                 .location(request.getLocation())
                 .hobby(request.getHobby())
-                .nickname(request.getNickname())
                 .build();
 
         surveyRepository.save(survey);
