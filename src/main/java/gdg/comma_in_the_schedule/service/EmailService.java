@@ -135,6 +135,7 @@ public class EmailService {
                 throw new EmailNotVerifiedHandler(ErrorStatus._EMAIL_NOT_VERIFIED);
             }
         }else{
-            throw new UserNotAttemptsVerificationHandler(ErrorStatus._EMAIL_TOKEN_NOT_EXISTS);        }
+            throw new UserNotAttemptsVerificationHandler(ErrorStatus._EMAIL_TOKEN_NOT_EXISTS);
+        }
     }
 }
