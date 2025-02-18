@@ -19,4 +19,7 @@ public class User extends BaseEntity {
 
     @Column(nullable = false, length = 60)
     private String password;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Survey survey;
 }
