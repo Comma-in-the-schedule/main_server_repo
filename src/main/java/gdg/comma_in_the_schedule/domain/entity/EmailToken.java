@@ -22,7 +22,7 @@ public class EmailToken {
     private String email;
 
     @Column(unique = true)
-    private String verificationCode; // UUID 기반 인증 코드
+    private String verificationCode;
 
     @Column(nullable = false)
     private Boolean isVerified; //인증 여부 확인
