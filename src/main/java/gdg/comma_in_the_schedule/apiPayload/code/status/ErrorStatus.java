@@ -19,7 +19,13 @@ public enum ErrorStatus implements BaseErrorCode {
     _PASSSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "USER102", "비밀번호가 일치하지 않습니다"),
     _EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "USER103", "이메일 인증이 완료되지 않았습니다"),
     _EMAIL_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST, "USER104", "이메일 토큰이 만료되었습니다"),
-    _EMAIL_AlREADY_VERIFIED(HttpStatus.BAD_REQUEST, "USER105", "이미 인증을 완료한 이메일입니다")
+    _EMAIL_AlREADY_VERIFIED(HttpStatus.BAD_REQUEST, "USER105", "이미 인증을 완료한 이메일입니다"),
+
+    _TOKEN_EXPIRED(HttpStatus.BAD_REQUEST, "TOKEN200", "토큰이 만료되었습니다."),
+    _INVALID_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN201", "유효한 토큰이 아닙니다."),
+    _EMPTY_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN202", "토큰이 비었습니다."),
+    _TOKEN_UNSUPPORTED(HttpStatus.BAD_REQUEST, "TOKEN203", "지원되지 않는 토큰 형식입니다."),
+
     ;
 
     private final HttpStatus httpStatus;
