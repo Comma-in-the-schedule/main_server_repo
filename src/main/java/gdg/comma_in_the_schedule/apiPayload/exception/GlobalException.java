@@ -3,6 +3,10 @@ package gdg.comma_in_the_schedule.apiPayload.exception;
 import gdg.comma_in_the_schedule.apiPayload.ApiResponse;
 import gdg.comma_in_the_schedule.apiPayload.code.status.ErrorStatus;
 import gdg.comma_in_the_schedule.apiPayload.exception.handler.*;
+import gdg.comma_in_the_schedule.apiPayload.exception.handler.jwt.ExpiredTokenHandler;
+import gdg.comma_in_the_schedule.apiPayload.exception.handler.jwt.InvalidTokenHandler;
+import gdg.comma_in_the_schedule.apiPayload.exception.handler.jwt.TokenEmptyHandler;
+import gdg.comma_in_the_schedule.apiPayload.exception.handler.jwt.UnsupportedTokenHandler;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -32,7 +36,25 @@ public class GlobalException {
         return ApiResponse.onFailure(handler.getErrorReason().getCode(), handler.getMessage(), ErrorStatus._EMAIL_NOT_VERIFIED);
     }
     @ExceptionHandler(EmailTokenExpiredHandler.class)
-    public ApiResponse<ErrorStatus> handlePasswordNotMatchException(EmailTokenExpiredHandler handler) {
+    public ApiResponse<ErrorStatus> handleEmailTokenExpiredException(EmailTokenExpiredHandler handler) {
         return ApiResponse.onFailure(handler.getErrorReason().getCode(), handler.getMessage(), ErrorStatus._EMAIL_TOKEN_EXPIRED);
     }
+
+    @ExceptionHandler(ExpiredTokenHandler.class)
+    public ApiResponse<ErrorStatus> handleTokenExpiredException(ExpiredTokenHandler handler) {
+        return ApiResponse.onFailure(handler.getErrorReason().getCode(), handler.getMessage(), ErrorStatus._TOKEN_EXPIRED);
+    }
+    @ExceptionHandler(InvalidTokenHandler.class)
+    public ApiResponse<ErrorStatus> handleInvalidTokenException(InvalidTokenHandler handler) {
+        return ApiResponse.onFailure(handler.getErrorReason().getCode(), handler.getMessage(), ErrorStatus._INVALID_TOKEN);
+    }
+    @ExceptionHandler(TokenEmptyHandler.class)
+    public ApiResponse<ErrorStatus> handleEmptyTokenException(TokenEmptyHandler handler) {
+        return ApiResponse.onFailure(handler.getErrorReason().getCode(), handler.getMessage(), ErrorStatus._EMPTY_TOKEN);
+    }
+    @ExceptionHandler(UnsupportedTokenHandler.class)
+    public ApiResponse<ErrorStatus> handleUnsupportedTokenException(UnsupportedTokenHandler handler) {
+        return ApiResponse.onFailure(handler.getErrorReason().getCode(), handler.getMessage(), ErrorStatus._TOKEN_UNSUPPORTED);
+    }
+
 }
