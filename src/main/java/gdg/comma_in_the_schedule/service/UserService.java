@@ -8,25 +8,32 @@ import gdg.comma_in_the_schedule.apiPayload.exception.handler.PasswordNotMatchHa
 import gdg.comma_in_the_schedule.config.jwt.JWToken;
 import gdg.comma_in_the_schedule.config.jwt.JwtGenerator;
 import gdg.comma_in_the_schedule.domain.entity.EmailToken;
+import gdg.comma_in_the_schedule.domain.entity.Survey;
 import gdg.comma_in_the_schedule.domain.entity.User;
 import gdg.comma_in_the_schedule.repository.EmailTokenRepository;
+import gdg.comma_in_the_schedule.repository.SurveyRepository;
 import gdg.comma_in_the_schedule.repository.UserRepository;
 import gdg.comma_in_the_schedule.web.dto.userdto.UserRequestDTO;
 import gdg.comma_in_the_schedule.web.dto.userdto.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @RequiredArgsConstructor
+@Slf4j
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final EmailTokenRepository emailTokenRepository;
+    private final SurveyRepository surveyRepository;
+
     private final PasswordEncoder passwordEncoder;
     private final JwtGenerator jwtGenerator;
 
-    private final EmailTokenRepository emailTokenRepository;
     private final EmailService emailService;
 
     public void registerUser(UserRequestDTO userRequestDTO) {
@@ -66,5 +73,29 @@ public class UserService {
                 .refreshToken(jwToken.getRefreshToken())
                 .userDTO(UserResponseDTO.UserInfoDTO.builder().email(user.getEmail()).build())
                 .build();
+    }
+
+    public void saveSurvey(UserRequestDTO.SurveyUserRequestDTO surveyUserRequestDTO) {
+        //이메일 유효성 검증
+        User user = userRepository.findByEmail(surveyUserRequestDTO.getEmail()).orElseThrow(() -> new EmailNotExistsHandler(ErrorStatus._USER_NOT_EXISTS));
+
+        Optional<Survey> byUserEmail = surveyRepository.findByUserEmail(user.getEmail());
+
+        if(byUserEmail.isPresent()){
+            Survey survey = byUserEmail.get();
+            survey.setNickname(surveyUserRequestDTO.getNickname());
+            survey.setLocation(surveyUserRequestDTO.getLocation());
+            survey.setCategory(surveyUserRequestDTO.getCategories());
+            surveyRepository.save(survey);
+        }else{
+            Survey survey = Survey.builder()
+                    .user(user)
+                    .nickname(surveyUserRequestDTO.getNickname())
+                    .location(surveyUserRequestDTO.getLocation())
+                    .category(surveyUserRequestDTO.getCategories())
+                    .build();
+
+            surveyRepository.save(survey);
+        }
     }
 }
