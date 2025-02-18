@@ -33,4 +33,14 @@ public class UserRestController {
         UserResponseDTO.UserLoginResponseDTO userLoginResponseDTO = userService.loginUser(userRequestDTO);
         return ApiResponse.onSuccess(userLoginResponseDTO);
     }
+
+    /*
+    * 설문조사 API
+    * */
+    @PostMapping("/survey")
+    public ApiResponse<?> surveyUser(@RequestHeader("Authorization") String token,
+                                     @RequestBody UserRequestDTO.SurveyUserRequestDTO surveyUserRequestDTO){
+        userService.saveSurvey(surveyUserRequestDTO);
+        return ApiResponse.onSuccess(SuccessStatus._OK);
+    }
 }
