@@ -1,5 +1,10 @@
 package gdg.comma_in_the_schedule.config.jwt;
 
+import gdg.comma_in_the_schedule.apiPayload.code.status.ErrorStatus;
+import gdg.comma_in_the_schedule.apiPayload.exception.handler.jwt.ExpiredTokenHandler;
+import gdg.comma_in_the_schedule.apiPayload.exception.handler.jwt.InvalidTokenHandler;
+import gdg.comma_in_the_schedule.apiPayload.exception.handler.jwt.TokenEmptyHandler;
+import gdg.comma_in_the_schedule.apiPayload.exception.handler.jwt.UnsupportedTokenHandler;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -17,6 +22,7 @@ import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -36,19 +42,8 @@ public class JwtTokenProvider {
         // Jwt 토큰 복호화
         Claims claims = parseClaims(accessToken);
 
-        if (claims.get("auth") == null) {
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
-        }
-
-        // 클레임에서 권한 정보 가져오기
-        Collection<? extends GrantedAuthority> authorities = Arrays.stream(claims.get("auth").toString().split(","))
-                .map(SimpleGrantedAuthority::new)
-                .toList();
-
-        // UserDetails 객체를 만들어서 Authentication return
-        // UserDetails: interface, User: UserDetails를 구현한 class
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
-        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+        UserDetails principal = new User(claims.getSubject(), "", List.of()); // 빈 권한 리스트 사용
+        return new UsernamePasswordAuthenticationToken(principal, "", List.of());
     }
 
     // 토큰 정보를 검증하는 메서드
@@ -61,14 +56,19 @@ public class JwtTokenProvider {
             return true;
         } catch (SecurityException | MalformedJwtException e) {
             log.info("Invalid JWT Token", e);
+            throw new InvalidTokenHandler(ErrorStatus._INVALID_TOKEN);
         } catch (ExpiredJwtException e) {
             log.info("Expired JWT Token", e);
+            throw new ExpiredTokenHandler(ErrorStatus._TOKEN_EXPIRED);
         } catch (UnsupportedJwtException e) {
             log.info("Unsupported JWT Token", e);
+            throw new UnsupportedTokenHandler(ErrorStatus._TOKEN_UNSUPPORTED);
         } catch (IllegalArgumentException e) {
             log.info("JWT claims string is empty.", e);
+            throw new TokenEmptyHandler(ErrorStatus._EMPTY_TOKEN);
+
         }
-        return false;
+//        return false;
     }
 
 
