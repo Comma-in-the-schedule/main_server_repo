@@ -27,6 +27,7 @@ public enum ErrorStatus implements BaseErrorCode {
     _EMPTY_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN202", "토큰이 비었습니다."),
     _TOKEN_UNSUPPORTED(HttpStatus.BAD_REQUEST, "TOKEN203", "지원되지 않는 토큰 형식입니다."),
 
+    _SURVEY_NOT_EXISTS(HttpStatus.BAD_REQUEST, "SURVEY301", "해당 유저의 설문조사 결과가 존재하지 않습니다"),
     ;
 
     private final HttpStatus httpStatus;
