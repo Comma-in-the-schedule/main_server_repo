@@ -29,7 +29,6 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final EmailTokenRepository emailTokenRepository;
-    private final SurveyRepository surveyRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final JwtGenerator jwtGenerator;
@@ -73,29 +72,5 @@ public class UserService {
                 .refreshToken(jwToken.getRefreshToken())
                 .userDTO(UserResponseDTO.UserInfoDTO.builder().email(user.getEmail()).build())
                 .build();
-    }
-
-    public void saveSurvey(UserRequestDTO.SurveyUserRequestDTO surveyUserRequestDTO) {
-        //이메일 유효성 검증
-        User user = userRepository.findByEmail(surveyUserRequestDTO.getEmail()).orElseThrow(() -> new EmailNotExistsHandler(ErrorStatus._USER_NOT_EXISTS));
-
-        Optional<Survey> byUserEmail = surveyRepository.findByUserEmail(user.getEmail());
-
-        if(byUserEmail.isPresent()){
-            Survey survey = byUserEmail.get();
-            survey.setNickname(surveyUserRequestDTO.getNickname());
-            survey.setLocation(surveyUserRequestDTO.getLocation());
-            survey.setCategory(surveyUserRequestDTO.getCategories());
-            surveyRepository.save(survey);
-        }else{
-            Survey survey = Survey.builder()
-                    .user(user)
-                    .nickname(surveyUserRequestDTO.getNickname())
-                    .location(surveyUserRequestDTO.getLocation())
-                    .category(surveyUserRequestDTO.getCategories())
-                    .build();
-
-            surveyRepository.save(survey);
-        }
     }
 }
