@@ -56,5 +56,9 @@ public class GlobalException {
     public ApiResponse<ErrorStatus> handleUnsupportedTokenException(UnsupportedTokenHandler handler) {
         return ApiResponse.onFailure(handler.getErrorReason().getCode(), handler.getMessage(), ErrorStatus._TOKEN_UNSUPPORTED);
     }
+    @ExceptionHandler(SurveyNotExistsHandler.class)
+    public ApiResponse<ErrorStatus> handleSurveyNotExistsException(SurveyNotExistsHandler handler) {
+        return ApiResponse.onFailure(handler.getErrorReason().getCode(), handler.getMessage(), ErrorStatus._SURVEY_NOT_EXISTS);
+    }
 
 }
