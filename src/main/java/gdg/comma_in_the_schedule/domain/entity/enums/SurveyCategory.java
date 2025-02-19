@@ -32,4 +32,8 @@ public enum SurveyCategory {
         throw new IllegalArgumentException("Invalid category code: " + code);
     }
 
+    // 카테고리 -> 숫자 변환
+    public static int toCode(SurveyCategory category) {
+        return category.getCode();
+    }
 }
