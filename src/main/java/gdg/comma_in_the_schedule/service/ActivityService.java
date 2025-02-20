@@ -2,14 +2,18 @@ package gdg.comma_in_the_schedule.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import gdg.comma_in_the_schedule.apiPayload.code.BaseErrorCode;
 import gdg.comma_in_the_schedule.apiPayload.code.status.ErrorStatus;
 import gdg.comma_in_the_schedule.apiPayload.exception.handler.EmailNotExistsHandler;
+import gdg.comma_in_the_schedule.apiPayload.exception.handler.RecommendDataNotExistsHandler;
 import gdg.comma_in_the_schedule.apiPayload.exception.handler.SurveyNotExistsHandler;
 import gdg.comma_in_the_schedule.domain.entity.Survey;
 import gdg.comma_in_the_schedule.domain.entity.User;
 import gdg.comma_in_the_schedule.domain.entity.enums.SurveyCategory;
 import gdg.comma_in_the_schedule.repository.SurveyRepository;
 import gdg.comma_in_the_schedule.repository.UserRepository;
+import gdg.comma_in_the_schedule.web.dto.ResponseDTO;
+import gdg.comma_in_the_schedule.web.dto.activitydto.ActivityResponseDTO;
 import gdg.comma_in_the_schedule.web.dto.userdto.UserRequestDTO;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,7 +40,7 @@ public class ActivityService {
     private final UserRepository userRepository;
     private final SurveyRepository surveyRepository;
 
-    public void recommendAll(UserRequestDTO userRequestDTO){
+    public List<List<ActivityResponseDTO>> recommendAll(UserRequestDTO userRequestDTO){
         //유저 유효성 검사
         User user = userRepository.findByEmail(userRequestDTO.getEmail()).orElseThrow(() -> new EmailNotExistsHandler(ErrorStatus._USER_NOT_EXISTS));
 
@@ -67,20 +72,33 @@ public class ActivityService {
 
         //AI 서버로 요청
         String aiServerUrl = "http://13.209.119.248:5000/ai/recommendation";
+        List<List<ActivityResponseDTO>> activities  = new ArrayList<>();
+
         try{
-            Mono<JsonNode> responseMono = webClient.post()
+            JsonNode response = webClient.post()
                     .uri(aiServerUrl)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .body(Mono.just(requestBody), AIRequestDTO.class)
                     .retrieve()
-                    .bodyToMono(JsonNode.class);
-            responseMono.subscribe(response -> {
-                System.out.println("서버 응답: " + response);
-            });
-        }catch(Exception e){
-            throw new RuntimeException("요청 실패");
-        }
+                    .bodyToMono(JsonNode.class)
+                    .block();
 
+            JsonNode result = response.get("result"); //결과 값만 추출
+
+            for(JsonNode node : result){
+                List<ActivityResponseDTO> categoryActivities = new ArrayList<>();
+                for(JsonNode jsonNode : node){
+                    categoryActivities.add(ActivityResponseDTO.fromJsonNode(jsonNode));
+                }
+                activities.add(categoryActivities);
+            }
+
+            System.out.println("서버 응답: " + response);
+
+        }catch(Exception e){
+            throw new RecommendDataNotExistsHandler(ErrorStatus._DATA_NOT_EXISTS);
+        }
+        return activities;
     }
 
 
