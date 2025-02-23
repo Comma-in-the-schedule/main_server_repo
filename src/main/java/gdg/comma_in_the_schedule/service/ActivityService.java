@@ -66,7 +66,7 @@ public class ActivityService {
         //요청 객체 생성
         AIRequestDTO requestBody = AIRequestDTO.builder()
                 .location(location)
-                .freeTime("2025.02.05.")
+                .freeTime("2025.02.21.")
                 .category(categories)
                 .build();
 
