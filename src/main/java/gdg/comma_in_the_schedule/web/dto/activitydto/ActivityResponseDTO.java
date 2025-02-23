@@ -33,6 +33,7 @@ public class ActivityResponseDTO {
     private String openingTime;
 
     private String url;
+    private String image;
 
     @Getter
     @AllArgsConstructor
