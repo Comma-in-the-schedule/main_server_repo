@@ -50,9 +50,9 @@ public class SurveyService {
         }
     }
 
-    public SurveyResponseDTO getSurvey(UserRequestDTO userRequestDTO){
+    public SurveyResponseDTO getSurvey(String email){
         //이메일 유효성 검증
-        User user = userRepository.findByEmail(userRequestDTO.getEmail()).orElseThrow(() -> new EmailNotExistsHandler(ErrorStatus._USER_NOT_EXISTS));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new EmailNotExistsHandler(ErrorStatus._USER_NOT_EXISTS));
 
         Optional<Survey> survey = surveyRepository.findByUserEmail(user.getEmail());
 

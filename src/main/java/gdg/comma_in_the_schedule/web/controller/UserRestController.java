@@ -52,8 +52,9 @@ public class UserRestController {
     * */
     @GetMapping("/survey")
     public ApiResponse<?> getSurvey(@RequestHeader("Authorization") String token,
-                                    @RequestBody UserRequestDTO userRequestDTO){
-        SurveyResponseDTO surveyResponseDTO = surveyService.getSurvey(userRequestDTO);
+//                                    @RequestBody UserRequestDTO userRequestDTO
+                                    @RequestParam String email){
+        SurveyResponseDTO surveyResponseDTO = surveyService.getSurvey(email);
         return ApiResponse.onSuccess(surveyResponseDTO);
     }
 }
