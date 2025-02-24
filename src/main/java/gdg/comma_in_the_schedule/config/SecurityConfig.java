@@ -34,12 +34,10 @@ public class SecurityConfig{
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         // 해당 API에 대해서는 모든 요청을 허가
-                        .requestMatchers("/membership/auth/signup", "/membership/auth/login").permitAll()
+                        .requestMatchers("/membership/auth/signup", "/membership/auth/login", "/email/send", "/email/verify", "/email/check").permitAll()
                         // 이 밖에 모든 요청에 대해서 인증을 필요로 한다는 설정
-                        .anyRequest().permitAll())
-//                        // USER 권한이 있어야 요청할 수 있음
-//                        .requestMatchers("/members/test").hasRole("USER"))
-                // JWT 인증을 위하여 직접 구현한 필터를 UsernamePasswordAuthenticationFilter 전에 실행
+                        .anyRequest().authenticated())
+
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
                         UsernamePasswordAuthenticationFilter.class
                 )
@@ -49,9 +47,5 @@ public class SecurityConfig{
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
-//        return PasswordEncoderFactories.createDelegatingPasswordEncoder(); //추후 확장을 고려하여 다른 알고리즘 적용 가능(디폴트는 Bcrypt임)
-
     }
-
-
 }
