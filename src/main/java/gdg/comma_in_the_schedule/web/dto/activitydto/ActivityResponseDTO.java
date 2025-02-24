@@ -51,6 +51,7 @@ public class ActivityResponseDTO {
                         .period(node.get("period").asText())
                         .openingTime(node.get("opening_time").asText())
                         .url(node.get("url").asText())
+                        .image(node.get("image").asText())
                         .build();
     }
 }
